@@ -1,0 +1,17 @@
+FROM golang:alpine AS builder
+WORKDIR /go/src
+COPY . .
+RUN go get
+RUN go build -o /go/bin/backend_api
+
+FROM alpine:3.20 AS final
+RUN apk add --no-cache tzdata ca-certificates \
+  && addgroup -S app && adduser -S app -G app
+
+WORKDIR /app
+COPY --from=builder /go/bin/backend_api /app/backend_api
+
+ENV TZ="Asia/Bangkok"
+EXPOSE 1970
+USER app
+ENTRYPOINT ["/app/backend_api"]

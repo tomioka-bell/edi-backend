@@ -1,0 +1,54 @@
+# Start from a Go image
+FROM golang:1.24.3-alpine
+
+# Setup Work Directory
+WORKDIR /app
+
+# Copy Go modules and install dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the Go application
+RUN go build -o edi-system .
+
+# Expose the port your app will run on
+EXPOSE ${PORT}
+
+ENV SMTP_HOST=${SMTP_HOST}
+ENV SMTP_USERNAME=${SMTP_USERNAME}
+ENV SMTP_PASSWORD=${SMTP_PASSWORD}
+ENV SMTP_PORT=${SMTP_PORT}
+ENV SMTP_SET_FROM=${SMTP_SET_FROM}
+ENV SMTP_SET_FROM_NAME=${SMTP_SET_FROM_NAME}
+ENV SMTP_CUSTOM_CA_FILE=${SMTP_CUSTOM_CA_FILE}
+ENV SMTP_ALLOW_INVALID_TLS=${SMTP_ALLOW_INVALID_TLS}
+
+
+ENV REDIS_HOST=${REDIS_HOST}
+ENV REDIS_PORT=${REDIS_PORT}
+ENV REDIS_PASSWORD=${REDIS_PASSWORD}
+
+ENV AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+
+ENV SQL_USER=${SQL_USER}
+ENV SQL_PASSWORD=${SQL_PASSWORD}
+ENV SQL_DB=${SQL_DB}
+ENV SQL_HOST=${SQL_HOST}
+ENV SQL_PORT=${SQL_PORT}
+
+ENV FRONTEND_BASE_URL=${FRONTEND_BASE_URL}
+
+ENV LDAP_IP=${LDAP_IP}
+ENV LDAP_DNS=${LDAP_DNS}
+ENV LDAP_PASSWORD=${LDAP_PASSWORD}
+
+ENV SERVER_PORT=${SERVER_PORT}
+ENV TOKEN_SECRET_KEY=${TOKEN_SECRET_KEY}
+
+# Expose the end ======================================
+
+# Run the application
+CMD ["./edi-system"]
