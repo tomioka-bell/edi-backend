@@ -16,7 +16,7 @@ var (
 func ConnectRedis() *redis.Client {
 	once.Do(func() {
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:         os.Getenv("REDIS_PORT"),
+			Addr:         os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"),
 			Password:     os.Getenv("REDIS_PASSWORD"),
 			DB:           0,
 			DialTimeout:  5 * time.Second,
