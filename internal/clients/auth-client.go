@@ -24,6 +24,7 @@ type LDAPUserInfo struct {
 	Position     string `json:"position"`
 	ADUsername   string `json:"ad_username"`
 	ADMail       string `json:"ad_mail"`
+	TempOTP      string `gorm:"-"`
 }
 
 type ldapAuthRequest struct {

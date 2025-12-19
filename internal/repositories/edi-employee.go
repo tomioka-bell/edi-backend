@@ -1,15 +1,16 @@
 package repositories
 
 import (
-	"backend/internal/core/domains"
-	ports "backend/internal/core/ports/repositories"
-	"backend/internal/pkgs/utils"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"gorm.io/gorm"
+
+	"backend/internal/clients"
+	"backend/internal/core/domains"
+	ports "backend/internal/core/ports/repositories"
+	"backend/internal/pkgs/utils"
 )
 
 type EmployeeRepositoryDB struct {
@@ -87,18 +88,11 @@ func (r *EmployeeRepositoryDB) CreateEDIPrincipalRepository(EDIUser *domains.EDI
 	return nil
 }
 
-func (r *EmployeeRepositoryDB) StartLoginWithEmailEmployeeOTP(email string) (*domains.EmployeeView, error) {
-	var u domains.EmployeeView
-	if err := r.db.Where("AD_Mail = ?", email).First(&u).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	if strings.EqualFold(u.AD_AccountStatus, "DISABLE") {
-		return nil, nil
-	}
+func (r *EmployeeRepositoryDB) StartLoginWithEmailEmployeeOTP(email, ADUsername, EmployeeCode string) (*clients.LDAPUserInfo, error) {
+	// fmt.Println("StartLoginWithEmailADUsernameOTP for. dddddd", email)
+	// fmt.Println("StartLoginWithEmailEADUsernameOTP for. dddddd", ADUsername)
+	// fmt.Println("StartLoginWithEmailEmployeeOTP for. dddddd", EmployeeCode)
+	var u clients.LDAPUserInfo
 
 	plain, hash, err := utils.New6DigitCode()
 	if err != nil {
@@ -110,7 +104,7 @@ func (r *EmployeeRepositoryDB) StartLoginWithEmailEmployeeOTP(email string) (*do
 	err = r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Exec(
 			`DELETE FROM login_verifications_employee WHERE user_login = ?`,
-			u.AD_UserLogon,
+			ADUsername,
 		).Error; err != nil {
 			return fmt.Errorf("cleanup old login codes: %w", err)
 		}
@@ -125,9 +119,9 @@ func (r *EmployeeRepositoryDB) StartLoginWithEmailEmployeeOTP(email string) (*do
 				DATEADD(MINUTE, 1, t.created_at), t.created_at, 0
 			FROM (SELECT SYSUTCDATETIME() AS created_at) AS t
 		`,
-			u.AD_UserLogon,
-			u.UHR_EmpCode,
-			u.AD_Mail,
+			ADUsername,
+			EmployeeCode,
+			email,
 			hash,
 		).Error; err != nil {
 			return fmt.Errorf("insert login code: %w", err)

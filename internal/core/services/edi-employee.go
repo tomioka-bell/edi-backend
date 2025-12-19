@@ -1,13 +1,6 @@
 package services
 
 import (
-	"backend/internal/clients"
-	"backend/internal/core/domains"
-	"backend/internal/core/models"
-	ports "backend/internal/core/ports/repositories"
-	servicesports "backend/internal/core/ports/services"
-	"backend/internal/pkgs/mailer"
-	"backend/internal/pkgs/utils"
 	"errors"
 	"fmt"
 	"os"
@@ -16,6 +9,14 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
+
+	"backend/internal/clients"
+	"backend/internal/core/domains"
+	"backend/internal/core/models"
+	ports "backend/internal/core/ports/repositories"
+	servicesports "backend/internal/core/ports/services"
+	"backend/internal/pkgs/mailer"
+	"backend/internal/pkgs/utils"
 )
 
 type employeeService struct {
@@ -74,7 +75,7 @@ func (s *employeeService) StartLoginWithEmailEmployeeOTPService(
 	}
 
 	// 3) ถ้ายังต้องใช้ OTP → สร้าง/บันทึก OTP และส่งอีเมล
-	u, err := s.employeeRepo.StartLoginWithEmailEmployeeOTP(ldapUser.ADMail)
+	u, err := s.employeeRepo.StartLoginWithEmailEmployeeOTP(ldapUser.ADMail, ldapUser.ADUsername, ldapUser.EmployeeCode)
 	if err != nil {
 		return "", fmt.Errorf("StartLoginWithEmailEmployeeOTP error: %w", err)
 	}
@@ -82,9 +83,7 @@ func (s *employeeService) StartLoginWithEmailEmployeeOTPService(
 		return "", errors.New("เริ่มกระบวนการ OTP ไม่สำเร็จ (ผลลัพธ์ว่าง)")
 	}
 
-	fmt.Println("sending OTP to:", u.AD_Mail, "code:", u.TempOTP)
-
-	if err := mailer.SendLoginOTPEmail(u.AD_Mail, u.TempOTP); err != nil {
+	if err := mailer.SendLoginOTPEmail(ldapUser.ADMail, u.TempOTP); err != nil {
 		return "", fmt.Errorf("send login otp email: %w", err)
 	}
 
