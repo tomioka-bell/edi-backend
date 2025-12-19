@@ -129,6 +129,7 @@ func (r *EmployeeRepositoryDB) StartLoginWithEmailEmployeeOTP(email, ADUsername,
 
 		return nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
