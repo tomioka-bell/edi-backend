@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"backend/internal/core/domains"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,6 +8,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
+
+	"backend/internal/core/domains"
 )
 
 type EDISummaryDataRepositoryDB struct {
@@ -72,6 +73,7 @@ func (r *EDISummaryDataRepositoryDB) getStatusSummary(
 			SUM(CASE WHEN %s = 'New'      THEN 1 ELSE 0 END) AS new_count,
 			SUM(CASE WHEN %s = 'Confirm'  THEN 1 ELSE 0 END) AS confirm_count,
 			SUM(CASE WHEN %s = 'Reject'   THEN 1 ELSE 0 END) AS reject_count,
+			SUM(CASE WHEN %s = 'Change'   THEN 1 ELSE 0 END) AS change_count,
 			SUM(CASE WHEN %s = 'Approved' THEN 1 ELSE 0 END) AS approved_count,
 			COUNT(*) AS total_count
 		FROM %s
@@ -177,6 +179,7 @@ func (r *EDISummaryDataRepositoryDB) getStatusTotal(
 			SUM(CASE WHEN %[1]s = 'New'      THEN 1 ELSE 0 END) AS new_count,
 			SUM(CASE WHEN %[1]s = 'Confirm'  THEN 1 ELSE 0 END) AS confirm_count,
 			SUM(CASE WHEN %[1]s = 'Reject'   THEN 1 ELSE 0 END) AS reject_count,
+			SUM(CASE WHEN %[1]s = 'Change'   THEN 1 ELSE 0 END) AS change_count,
 			SUM(CASE WHEN %[1]s = 'Approved' THEN 1 ELSE 0 END) AS approved_count,
 			COUNT(*) AS total_count
 		FROM %s
@@ -258,6 +261,7 @@ func (r *EDISummaryDataRepositoryDB) getMonthlyStatusSummary(
 			SUM(CASE WHEN %[1]s = 'New'      THEN 1 ELSE 0 END) AS new_count,
 			SUM(CASE WHEN %[1]s = 'Confirm'  THEN 1 ELSE 0 END) AS confirm_count,
 			SUM(CASE WHEN %[1]s = 'Reject'   THEN 1 ELSE 0 END) AS reject_count,
+			SUM(CASE WHEN %[1]s = 'Change'   THEN 1 ELSE 0 END) AS change_count,
 			SUM(CASE WHEN %[1]s = 'Approved' THEN 1 ELSE 0 END) AS approved_count,
 			COUNT(*) AS total_count
 		FROM %s

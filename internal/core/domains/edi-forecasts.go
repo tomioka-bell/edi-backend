@@ -132,6 +132,7 @@ type ForecastStatusSummary struct {
 	NewCount      int64  `gorm:"column:new_count"`
 	ConfirmCount  int64  `gorm:"column:confirm_count"`
 	RejectCount   int64  `gorm:"column:reject_count"`
+	ChangeCount   int64  `gorm:"column:change_count"`
 	ApprovedCount int64  `gorm:"column:approved_count"`
 	TotalCount    int64  `gorm:"column:total_count"`
 }

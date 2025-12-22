@@ -13,6 +13,7 @@ type MonthlyStatusSummary struct {
 	NewCount      int64 `json:"new_count" gorm:"column:new_count"`
 	ConfirmCount  int64 `json:"confirm_count" gorm:"column:confirm_count"`
 	RejectCount   int64 `json:"reject_count" gorm:"column:reject_count"`
+	ChangeCount   int64 `json:"change_count" gorm:"column:change_count"`
 	ApprovedCount int64 `json:"approved_count" gorm:"column:approved_count"`
 	TotalCount    int64 `json:"total_count" gorm:"column:total_count"`
 }
