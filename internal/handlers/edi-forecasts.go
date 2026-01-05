@@ -394,7 +394,8 @@ func (h *EDIForecastHandler) CreateEDIForecastVersionHandler(c *fiber.Ctx) error
 		})
 	}
 
-	if err := h.EDIForecastSrv.CreateEDIForecastVersionService(req); err != nil {
+	ediForecastVersionID, err := h.EDIForecastSrv.CreateEDIForecastVersionService(req)
+	if err != nil {
 		log.Println("Error creating EDIForecastVersion:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create EDIForecastVersion",
@@ -402,7 +403,8 @@ func (h *EDIForecastHandler) CreateEDIForecastVersionHandler(c *fiber.Ctx) error
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "EDIForecastVersion created successfully",
+		"message":                 "EDIForecastVersion created successfully",
+		"edi_forecast_version_id": ediForecastVersionID,
 	})
 }
 

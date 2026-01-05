@@ -1,11 +1,12 @@
 package ports
 
 import (
-	"backend/internal/core/domains"
-	"backend/internal/core/models"
 	"context"
 
 	mssql "github.com/microsoft/go-mssqldb"
+
+	"backend/internal/core/domains"
+	"backend/internal/core/models"
 )
 
 type EDIOrderService interface {
@@ -14,7 +15,7 @@ type EDIOrderService interface {
 	GetEDIOrderWithActiveTopService(limit int, vendorCode string) ([]models.EDIOrderWithActiveReq, error)
 	GetEDIOrderDetailByNumber(number string) (*models.EDIOrderDetailResp, error)
 	UpdateStatusOrderService(id mssql.UniqueIdentifier, status string) error
-	CreateEDIOrderVersionService(req models.EDIOrderVersionResp) error
+	CreateEDIOrderVersionService(req models.EDIOrderVersionResp) (string, error)
 	GetEDIOrderByNumberOrderDataService(numberOrder string) ([]models.EDIOrderVersionStatusLogReq, error)
 	GenerateRunningNumberService() (string, error)
 	GetStatusOrderSummaryByVendorCodeService(vendorCode string) (*models.StatusOrderSummaryResp, error)

@@ -98,10 +98,6 @@ func SendLoginOTPEmail(toEmail, otp string) error {
 
 //==============================================================================================================
 
-func SendTestEmail(toEmail string) error {
-	return emailclient.SendTestEmail(toEmail)
-}
-
 // func SendTestEmail(toEmail string) error {
 // 	host := os.Getenv("SMTP_HOST")
 // 	portStr := os.Getenv("SMTP_PORT")

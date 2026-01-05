@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"backend/internal/pkgs/mailer"
 	"os"
 	"path/filepath"
 
@@ -25,22 +24,22 @@ func ServeUploadFile(c *fiber.Ctx) error {
 	return c.SendFile(filePath)
 }
 
-func TestSendEmailHandler(c *fiber.Ctx) error {
-	email := c.Query("email")
-	if email == "" {
-		return c.Status(400).JSON(fiber.Map{
-			"error": "email is required",
-		})
-	}
+// func TestSendEmailHandler(c *fiber.Ctx) error {
+// 	email := c.Query("email")
+// 	if email == "" {
+// 		return c.Status(400).JSON(fiber.Map{
+// 			"error": "email is required",
+// 		})
+// 	}
 
-	err := mailer.SendTestEmail(email)
-	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
+// 	err := mailer.SendTestEmail(email)
+// 	if err != nil {
+// 		return c.Status(500).JSON(fiber.Map{
+// 			"error": err.Error(),
+// 		})
+// 	}
 
-	return c.JSON(fiber.Map{
-		"message": "Test email sent successfully",
-	})
-}
+// 	return c.JSON(fiber.Map{
+// 		"message": "Test email sent successfully",
+// 	})
+// }

@@ -1,18 +1,19 @@
 package ports
 
 import (
-	"backend/internal/core/domains"
-	"backend/internal/core/models"
 	"context"
 
 	mssql "github.com/microsoft/go-mssqldb"
+
+	"backend/internal/core/domains"
+	"backend/internal/core/models"
 )
 
 type EDIForecastService interface {
 	CreateNewForecastWithVersion(ctx context.Context, headerIn *models.EDI_ForecastResp, versionIn *models.EDI_ForecastVersionResp) (*models.EDI_ForecastResp, error)
 	GetEDIForecastWithActiveTopService(limit int, vendorCode string) ([]models.EDIForecastWithActiveReq, error)
 	GetEDIForecastWithActiveByNumberService(number string) (*models.EDIForecastWithActiveReq, error)
-	CreateEDIForecastVersionService(req models.EDI_ForecastVersionResp) error
+	CreateEDIForecastVersionService(req models.EDI_ForecastVersionResp) (string, error)
 	GetEDIForecastDetailByNumber(number string) (*models.EDIForecastDetailResp, error)
 	MarkForecastAsReadService(id mssql.UniqueIdentifier) (*domains.EDI_Forecast, error)
 	UpdateStatusForecastService(id mssql.UniqueIdentifier, status string) error

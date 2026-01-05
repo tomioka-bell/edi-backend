@@ -14,7 +14,7 @@ type EDIInvoiceService interface {
 	GetEDIInvoiceWithActiveTopService(limit int, vendorCode string) ([]models.EDIInvoiceWithActiveReq, error)
 	GetEDIInvoiceDetailByNumber(number string) (*models.EDIInvoiceDetailResp, error)
 	UpdateStatusInvoiceService(id mssql.UniqueIdentifier, status string) error
-	CreateEDIInvoiceVersionService(req models.EDIInvoiceVersionResp) error
+	CreateEDIInvoiceVersionService(req models.EDIInvoiceVersionResp) (string, error)
 	GenerateRunningNumberService() (string, error)
 	GetInvoiceDetailByNumberOrderService(number string) (*models.EDIInvoiceDetailResp, error)
 	GetStatusInvoiceSummaryByVendorCodeService(vendorCode string) (*models.StatusInvoiceSummaryResp, error)

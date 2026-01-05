@@ -148,14 +148,14 @@ func (s *EDIForecastService) UpdateStatusForecastService(id mssql.UniqueIdentifi
 	return s.ediForecastRepo.UpdateStatusForecast(id, status)
 }
 
-func (s *EDIForecastService) CreateEDIForecastVersionService(req models.EDI_ForecastVersionResp) error {
+func (s *EDIForecastService) CreateEDIForecastVersionService(req models.EDI_ForecastVersionResp) (string, error) {
 	if s.ediForecastRepo == nil {
-		return fmt.Errorf("edi forecast repository is not initialized")
+		return "", fmt.Errorf("edi forecast repository is not initialized")
 	}
 
 	maxVer, err := s.ediForecastRepo.GetMaxVersionNoByForecastID(req.EDIForecastID)
 	if err != nil {
-		return fmt.Errorf("failed to get current max version: %w", err)
+		return "", fmt.Errorf("failed to get current max version: %w", err)
 	}
 
 	u := uuid.New()
@@ -177,18 +177,18 @@ func (s *EDIForecastService) CreateEDIForecastVersionService(req models.EDI_Fore
 	}
 
 	if err := s.ediForecastRepo.CreateEDIForecastVersionRepository(&domainISR); err != nil {
-		return fmt.Errorf("failed to create forecast version: %w", err)
+		return "", fmt.Errorf("failed to create forecast version: %w", err)
 	}
 
 	if err := s.ediForecastRepo.UpdateActiveForecastVersion(req.EDIForecastID, newID); err != nil {
-		return fmt.Errorf("failed to update active version: %w", err)
+		return "", fmt.Errorf("failed to update active version: %w", err)
 	}
 
 	if err := s.ediForecastRepo.UpdateStatusForecast(req.EDIForecastID, "Change"); err != nil {
-		return fmt.Errorf("failed to update forecast status: %w", err)
+		return "", fmt.Errorf("failed to update forecast status: %w", err)
 	}
 
-	return nil
+	return newID.String(), nil
 }
 
 func (s *EDIForecastService) GetEDIForecastWithActiveTopService(limit int, vendorCode string) ([]models.EDIForecastWithActiveReq, error) {

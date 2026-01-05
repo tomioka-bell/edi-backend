@@ -141,14 +141,14 @@ func (s *EDIInvoiceService) CreateNewInvoiceWithVersion(ctx context.Context,
 	return out, nil
 }
 
-func (s *EDIInvoiceService) CreateEDIInvoiceVersionService(req models.EDIInvoiceVersionResp) error {
+func (s *EDIInvoiceService) CreateEDIInvoiceVersionService(req models.EDIInvoiceVersionResp) (string, error) {
 	if s.ediInvoiceRepo == nil {
-		return fmt.Errorf("edi Invoice repository is not initialized")
+		return "", fmt.Errorf("edi Invoice repository is not initialized")
 	}
 
 	maxVer, err := s.ediInvoiceRepo.GetMaxVersionNoByInvoiceID(req.EDIInvoiceID)
 	if err != nil {
-		return fmt.Errorf("failed to get current max version: %w", err)
+		return "", fmt.Errorf("failed to get current max version: %w", err)
 	}
 
 	u := uuid.New()
@@ -169,17 +169,17 @@ func (s *EDIInvoiceService) CreateEDIInvoiceVersionService(req models.EDIInvoice
 	}
 
 	if err := s.ediInvoiceRepo.CreateEDIInvoiceVersionRepository(&domainISR); err != nil {
-		return fmt.Errorf("failed to create Invoice version: %w", err)
+		return "", fmt.Errorf("failed to create Invoice version: %w", err)
 	}
 	if err := s.ediInvoiceRepo.UpdateActiveInvoiceVersion(req.EDIInvoiceID.String(), newID.String()); err != nil {
-		return fmt.Errorf("failed to update active version: %w", err)
+		return "", fmt.Errorf("failed to update active version: %w", err)
 	}
 
 	if err := s.ediInvoiceRepo.UpdateStatusInvoice(req.EDIInvoiceID, "Change"); err != nil {
-		return fmt.Errorf("failed to update Invoice status: %w", err)
+		return "", fmt.Errorf("failed to update Invoice status: %w", err)
 	}
 
-	return nil
+	return newID.String(), nil
 }
 
 func (s *EDIInvoiceService) MarkInvoiceAsReadService(id mssql.UniqueIdentifier) error {

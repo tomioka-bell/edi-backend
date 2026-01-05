@@ -1,10 +1,6 @@
 package handlers
 
 import (
-	"backend/internal/core/models"
-	services "backend/internal/core/ports/services"
-	"backend/internal/pkgs/mailer"
-	"backend/internal/pkgs/utils"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,6 +9,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
+
+	"backend/internal/core/models"
+	services "backend/internal/core/ports/services"
+	"backend/internal/pkgs/mailer"
+	"backend/internal/pkgs/utils"
 )
 
 type EDIOrderHandler struct {
@@ -377,7 +378,8 @@ func (h *EDIOrderHandler) CreateEDIOrderVersionHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.EDIOrderSrv.CreateEDIOrderVersionService(req); err != nil {
+	ediOrderVersionID, err := h.EDIOrderSrv.CreateEDIOrderVersionService(req)
+	if err != nil {
 		log.Println("Error creating EDIOrderVersion:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create EDIOrderVersion",
@@ -385,6 +387,7 @@ func (h *EDIOrderHandler) CreateEDIOrderVersionHandler(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "EDIOrderVersion created successfully",
+		"message":              "EDIOrderVersion created successfully",
+		"edi_order_version_id": ediOrderVersionID,
 	})
 }

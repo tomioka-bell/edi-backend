@@ -338,7 +338,8 @@ func (h *EDIInvoiceHandler) CreateEDIInvoiceVersionHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.EDIInvoiceSrv.CreateEDIInvoiceVersionService(req); err != nil {
+	ediInvoiceVersionID, err := h.EDIInvoiceSrv.CreateEDIInvoiceVersionService(req)
+	if err != nil {
 		log.Println("Error creating EDIInvoiceVersion:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create EDIInvoiceVersion",
@@ -346,6 +347,7 @@ func (h *EDIInvoiceHandler) CreateEDIInvoiceVersionHandler(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"message": "EDIInvoiceVersion created successfully",
+		"message":                "EDIInvoiceVersion created successfully",
+		"edi_invoice_version_id": ediInvoiceVersionID,
 	})
 }

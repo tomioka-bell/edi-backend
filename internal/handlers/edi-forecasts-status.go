@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"backend/internal/core/models"
-	"backend/internal/pkgs/mailer"
-	"backend/internal/pkgs/utils"
 	"log"
 	"strings"
 	"time"
@@ -11,6 +8,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
+
+	"backend/internal/core/models"
+	"backend/internal/pkgs/mailer"
+	"backend/internal/pkgs/utils"
 )
 
 func ToMSSQLUUID(idStr string) (mssql.UniqueIdentifier, error) {
@@ -132,87 +133,92 @@ func (h *EDIForecastHandler) CreateEDIForecastVersionStatusLogHandler(c *fiber.C
 
 	// -----------------------
 	// ตรวจว่าใครเป็นคนเปลี่ยนสถานะ
+	// ถ้าเป็น "Chang" จะไม่ส่งอีเมลแจ้งเตือน
 	// -----------------------
-	var company string
-	var companyVendor string
-	changedBy := strings.ToUpper(strings.TrimSpace(form.ChangedBySourceSystem))
+	if StatusForecast != "Chang" {
+		var company string
+		var companyVendor string
+		changedBy := strings.ToUpper(strings.TrimSpace(form.ChangedBySourceSystem))
 
-	// ====== เคส APP_EMPLOYEE (พนักงานเราเปลี่ยน) -> ส่งหา Vendor (+ optional ส่งหา Employee) ======
-	if changedBy == "APP_EMPLOYEE" {
-		company = dataVersion.VendorCode
-		dataVendorMetrics, err := h.EDIForecastSrv.GetEDIVendorNotificationRecipientByCompanyService(dataVersion.VendorCode)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to get VendorMetrics",
-			})
-		}
-
-		var toEmails []string
-
-		for _, v := range dataVendorMetrics {
-			if v.Principal == nil {
-				continue
+		// ====== เคส APP_EMPLOYEE (พนักงานเราเปลี่ยน) -> ส่งหา Vendor (+ optional ส่งหา Employee) ======
+		if changedBy == "APP_EMPLOYEE" {
+			company = dataVersion.VendorCode
+			dataVendorMetrics, err := h.EDIForecastSrv.GetEDIVendorNotificationRecipientByCompanyService(dataVersion.VendorCode)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "failed to get VendorMetrics",
+				})
 			}
-			email := strings.TrimSpace(v.Principal.Email)
-			if email == "" {
-				continue
-			}
-			toEmails = append(toEmails, email)
 
-			if company == "" {
-				company = v.Company
-			}
-		}
+			var toEmails []string
 
-		if len(toEmails) > 0 && company != "" {
-			if err := mailer.SendStatusForecastVendorEmail(
-				toEmails,
+			for _, v := range dataVendorMetrics {
+				if v.Principal == nil {
+					continue
+				}
+				email := strings.TrimSpace(v.Principal.Email)
+				if email == "" {
+					continue
+				}
+				toEmails = append(toEmails, email)
+
+				if company == "" {
+					company = v.Company
+				}
+			}
+
+			if len(toEmails) > 0 && company != "" {
+				if err := mailer.SendStatusForecastVendorEmail(
+					toEmails,
+					StatusForecast,
+					company,
+					dataVersion.NumberForecast,
+					fileURLStr,
+					req.Note,
+				); err != nil {
+					log.Println("failed to send forecast status email to vendor:", err)
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error": "failed to send forecast status email to vendor",
+					})
+				}
+			} else {
+				log.Println("No valid vendor email recipient found, skip sending vendor email")
+			}
+
+		} else if changedBy == "APP_USER" {
+			companyVendor = dataVersion.VendorCode
+			if err := mailer.SendStatusForecastEmployeeEmail(
+				companyVendor,
 				StatusForecast,
-				company,
 				dataVersion.NumberForecast,
 				fileURLStr,
 				req.Note,
+				"forecast",
 			); err != nil {
-				log.Println("failed to send forecast status email to vendor:", err)
+				log.Println("failed to send forecast status email to employee (from vendor change):", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "failed to send forecast status email to vendor",
+					"error": "failed to send forecast status email to employee",
 				})
 			}
 		} else {
-			log.Println("No valid vendor email recipient found, skip sending vendor email")
-		}
-
-	} else if changedBy == "APP_USER" {
-		companyVendor = dataVersion.VendorCode
-		if err := mailer.SendStatusForecastEmployeeEmail(
-			companyVendor,
-			StatusForecast,
-			dataVersion.NumberForecast,
-			fileURLStr,
-			req.Note,
-			"forecast",
-		); err != nil {
-			log.Println("failed to send forecast status email to employee (from vendor change):", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to send forecast status email to employee",
-			})
+			log.Printf("Unknown ChangedBySourceSystem=%q, default to APP_EMPLOYEE behavior\n", changedBy)
+			companyVendor = dataVersion.VendorCode
+			if err := mailer.SendStatusForecastEmployeeEmail(
+				companyVendor,
+				StatusForecast,
+				dataVersion.NumberForecast,
+				fileURLStr,
+				req.Note,
+				"forecast",
+			); err != nil {
+				log.Println("failed to send forecast status email to employee (fallback):", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "failed to send forecast status email to employee",
+				})
+			}
 		}
 	} else {
-		log.Printf("Unknown ChangedBySourceSystem=%q, default to APP_EMPLOYEE behavior\n", changedBy)
-		companyVendor = dataVersion.VendorCode
-		if err := mailer.SendStatusForecastEmployeeEmail(
-			companyVendor,
-			StatusForecast,
-			dataVersion.NumberForecast,
-			fileURLStr,
-			req.Note,
-			"forecast",
-		); err != nil {
-			log.Println("failed to send forecast status email to employee (fallback):", err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "failed to send forecast status email to employee",
-			})
-		}
+		log.Println("StatusForecast is 'Chang', skip sending email notification")
 	}
 
 	if err := h.EDIForecastSrv.UpdateStatusForecastService(req.EDIForecastID, StatusForecast); err != nil {

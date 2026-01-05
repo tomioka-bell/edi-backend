@@ -142,14 +142,14 @@ func (s *EDIOrderService) GenerateRunningNumberService() (string, error) {
 	return fmt.Sprintf("ORD%s-%04d", today, next), nil
 }
 
-func (s *EDIOrderService) CreateEDIOrderVersionService(req models.EDIOrderVersionResp) error {
+func (s *EDIOrderService) CreateEDIOrderVersionService(req models.EDIOrderVersionResp) (string, error) {
 	if s.ediOrderRepo == nil {
-		return fmt.Errorf("edi order repository is not initialized")
+		return "", fmt.Errorf("edi order repository is not initialized")
 	}
 
 	maxVer, err := s.ediOrderRepo.GetMaxVersionNoByOrderID(req.EDIOrderID)
 	if err != nil {
-		return fmt.Errorf("failed to get current max version: %w", err)
+		return "", fmt.Errorf("failed to get current max version: %w", err)
 	}
 
 	u := uuid.New()
@@ -170,17 +170,17 @@ func (s *EDIOrderService) CreateEDIOrderVersionService(req models.EDIOrderVersio
 	}
 
 	if err := s.ediOrderRepo.CreateEDIOrderVersionRepository(&domainISR); err != nil {
-		return fmt.Errorf("failed to create order version: %w", err)
+		return "", fmt.Errorf("failed to create order version: %w", err)
 	}
 	if err := s.ediOrderRepo.UpdateActiveOrderVersion(req.EDIOrderID.String(), newID.String()); err != nil {
-		return fmt.Errorf("failed to update active version: %w", err)
+		return "", fmt.Errorf("failed to update active version: %w", err)
 	}
 
 	if err := s.ediOrderRepo.UpdateStatusOrder(req.EDIOrderID, "Change"); err != nil {
-		return fmt.Errorf("failed to update order status: %w", err)
+		return "", fmt.Errorf("failed to update order status: %w", err)
 	}
 
-	return nil
+	return newID.String(), nil
 }
 
 func (s *EDIOrderService) MarkOrderAsReadService(id mssql.UniqueIdentifier) error {

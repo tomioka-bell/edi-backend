@@ -18,14 +18,6 @@ func InitDefaultClient() error {
 	return nil
 }
 
-// SendTestEmail ส่งอีเมลทดสอบ
-func SendTestEmail(toEmail string) error {
-	if DefaultClient == nil {
-		return ErrClientNotInitialized
-	}
-	return DefaultClient.SendTestEmail(toEmail)
-}
-
 // SendLoginOTPEmail ส่งอีเมลรหัส OTP สำหรับการล็อกอิน
 func SendLoginOTPEmail(toEmail, otp string) error {
 	if DefaultClient == nil {

@@ -1,8 +1,9 @@
 package repositories
 
 import (
-	"backend/internal/core/domains"
 	"fmt"
+
+	"backend/internal/core/domains"
 )
 
 func (r *EDIOrderRepositoryDB) CreateEDIOrderVersionStatusLog(m *domains.EDIOrderVersionStatusLog) error {

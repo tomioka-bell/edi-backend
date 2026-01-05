@@ -7,22 +7,6 @@ import (
 	"backend/internal/pkgs/utils"
 )
 
-func (c *Client) SendTestEmail(toEmail string) error {
-	htmlBody := `
-	<!doctype html>
-	<html>
-	<head><meta charset="utf-8"/></head>
-	<body style="font-family: Arial, sans-serif;padding:  20px;">
-		<h2>Test Email Successful</h2>
-		<p>This is a test email sent from your backend SMTP settings. </p>
-		<p>If you received this email, your SMTP configuration is working correctly.</p>
-	</body>
-	</html>
-	`
-
-	return c.SendEmailOnly(toEmail, "Test Email from Backend", htmlBody)
-}
-
 func (c *Client) SendLoginOTPEmail(toEmail, otp string) error {
 	expireMin := 1
 	expiryTextEN := "1 minute"
