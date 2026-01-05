@@ -24,6 +24,7 @@ type EDIOrderService interface {
 	GetEDIOrderVersionByIDService(ediOrderVersionID string) (domains.EDIOrderVersion, error)
 	GetEDIVendorNotificationRecipientByCompanyService(company string) ([]models.EDIVendorNotificationRecipientReq, error)
 	GetOrderBasicByIDService(ediOrderID string) (domains.OrderBasicInfo, error)
+	GetOrderVersionStatusLogByOrderNumberAndApprovedService(orderNumber string) ([]models.EDIOrderVersionStatusLogReq, error)
 
 	// =============================================== Status Log =========================================================
 	CreateEDIOrderVersionStatusLogService(req models.EDIOrderVersionStatusLogResp) error

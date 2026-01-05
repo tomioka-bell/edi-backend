@@ -1,9 +1,9 @@
 package ports
 
 import (
-	"backend/internal/core/domains"
-
 	mssql "github.com/microsoft/go-mssqldb"
+
+	"backend/internal/core/domains"
 )
 
 type EDIOrderRepository interface {
@@ -33,4 +33,5 @@ type EDIOrderRepository interface {
 
 	GetEDIVendorNotificationRecipientByCompany(company string) ([]domains.EDIVendorNotificationRecipient, error)
 	GetOrderBasicByID(ediOrderID string) (domains.OrderBasicInfo, error)
+	GetOrderVersionStatusLogByOrderNumberAndApproved(orderNumber string) ([]domains.EDIOrderVersionStatusLog, error)
 }

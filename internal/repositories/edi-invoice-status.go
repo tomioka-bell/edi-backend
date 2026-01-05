@@ -1,8 +1,9 @@
 package repositories
 
 import (
-	"backend/internal/core/domains"
 	"fmt"
+
+	"backend/internal/core/domains"
 )
 
 func (r *EDIInvoiceRepositoryDB) CreateEDIInvoiceVersionStatusLog(m *domains.EDIInvoiceVersionStatusLog) error {
@@ -34,7 +35,6 @@ func (r *EDIInvoiceRepositoryDB) GetInvoiceVersionStatusLogByInvoiceVersionID(
 
 	if err := r.db.
 		Where("edi_invoice_id = ?", InvoiceVersionID).
-		Order("created_at ASC").
 		Find(&logs).Error; err != nil {
 		return nil, err
 	}

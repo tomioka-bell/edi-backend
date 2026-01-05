@@ -256,3 +256,22 @@ func (h *EDIOrderHandler) GetOrderVersionStatusLogByOrderVersionIDAndApprovedHan
 
 	return c.JSON(row)
 }
+
+func (h *EDIOrderHandler) GetOrderVersionStatusLogByOrderNumberAndApprovedHandler(c *fiber.Ctx) error {
+	OrderNumber := c.Params("order_number")
+
+	row, err := h.EDIOrderSrv.GetOrderVersionStatusLogByOrderNumberAndApprovedService(OrderNumber)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to retrieve Order version status log",
+		})
+	}
+
+	if row == nil {
+		return c.JSON(fiber.Map{
+			"data": nil,
+		})
+	}
+
+	return c.JSON(row)
+}

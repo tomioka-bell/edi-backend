@@ -1,14 +1,15 @@
 package services
 
 import (
-	"backend/internal/core/domains"
-	"backend/internal/core/models"
 	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
 	mssql "github.com/microsoft/go-mssqldb"
 	"gorm.io/gorm"
+
+	"backend/internal/core/domains"
+	"backend/internal/core/models"
 )
 
 func (s *EDIOrderService) CreateEDIOrderVersionStatusLogService(req models.EDIOrderVersionStatusLogResp) error {
@@ -89,6 +90,52 @@ func (s *EDIOrderService) GetOrderVersionStatusLogByOrderVersionIDAndApprovedSer
 ) ([]models.EDIOrderVersionStatusLogReq, error) {
 
 	logs, err := s.ediOrderRepo.GetOrderVersionStatusLogByOrderVersionIDAndApproved(orderVersionID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	resp := make([]models.EDIOrderVersionStatusLogReq, 0, len(logs))
+
+	for _, log := range logs {
+		var principal *models.PrincipalResp
+		if log.ChangedByPrincipal != nil {
+			principal = &models.PrincipalResp{
+				ExternalID:   log.ChangedByPrincipal.ExternalID,
+				SourceSystem: log.ChangedByPrincipal.SourceSystem,
+				Email:        log.ChangedByPrincipal.Email,
+				DisplayName:  log.ChangedByPrincipal.DisplayName,
+				Username:     log.ChangedByPrincipal.Username,
+				Profile:      log.ChangedByPrincipal.Profile,
+				Group:        log.ChangedByPrincipal.Group,
+				Role:         log.ChangedByPrincipal.Role,
+				Status:       log.ChangedByPrincipal.Status,
+			}
+		}
+
+		resp = append(resp, models.EDIOrderVersionStatusLogReq{
+			EDIOrderID:            log.EDIOrderID,
+			OldStatus:             log.OldStatus,
+			NewStatus:             log.NewStatus,
+			Note:                  log.Note,
+			ChangedByExternalID:   log.ChangedByExternalID,
+			ChangedBySourceSystem: log.ChangedBySourceSystem,
+			FileURL:               log.FileURL,
+			CreatedAt:             log.CreatedAt,
+			ChangedByUser:         principal,
+		})
+	}
+
+	return resp, nil
+}
+
+func (s *EDIOrderService) GetOrderVersionStatusLogByOrderNumberAndApprovedService(
+	orderNumber string,
+) ([]models.EDIOrderVersionStatusLogReq, error) {
+
+	logs, err := s.ediOrderRepo.GetOrderVersionStatusLogByOrderNumberAndApproved(orderNumber)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

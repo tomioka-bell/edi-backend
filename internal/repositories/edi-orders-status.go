@@ -135,3 +135,34 @@ func (r *EDIOrderRepositoryDB) GetEDIOrderByNumberOrderData(
 
 	return logs, nil
 }
+
+func (r *EDIOrderRepositoryDB) GetOrderVersionStatusLogByOrderNumberAndApproved(
+	orderNumber string,
+) ([]domains.EDIOrderVersionStatusLog, error) {
+
+	var logs []domains.EDIOrderVersionStatusLog
+
+	// Query using JOIN to get status logs by order number in one query
+	if err := r.db.
+		Joins("JOIN edi_order ON edi_order_version_status_log.edi_order_id = edi_order.edi_order_id").
+		Where("edi_order.number_order = ?", orderNumber).
+		Order("edi_order_version_status_log.created_at ASC").
+		Find(&logs).Error; err != nil {
+		return nil, err
+	}
+
+	// Load ChangedByPrincipal manually for each log
+	for i := range logs {
+		log := &logs[i]
+		if log.ChangedByExternalID != "" && log.ChangedBySourceSystem != "" {
+			var principal domains.EDI_Principal
+			if err := r.db.
+				Where("external_id = ? AND source_system = ?", log.ChangedByExternalID, log.ChangedBySourceSystem).
+				First(&principal).Error; err == nil {
+				log.ChangedByPrincipal = &principal
+			}
+		}
+	}
+
+	return logs, nil
+}

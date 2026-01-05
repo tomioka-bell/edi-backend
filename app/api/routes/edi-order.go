@@ -29,6 +29,7 @@ func RoutesEDIOrder(db *gorm.DB) *fiber.App {
 	app.Get("/get-status-order-summary-by-vendor-code", middlewares.JWTProtected(), EDIOrderHandler.GetStatusOrderSummaryByVendorCodeHandler)
 	app.Get("/get-order-by-vendor-code", middlewares.JWTProtected(), EDIOrderHandler.GetOrderHeaderByVendorCodeHandler)
 	app.Get("/get-order-by-forecaset", middlewares.JWTProtected(), EDIOrderHandler.GetOrderHeaderByNumberForecastHandler)
+	app.Get("/get-order-version-by-order-number/:order_number", EDIOrderHandler.GetOrderVersionStatusLogByOrderNumberAndApprovedHandler)
 	// =============================================== Status Log =========================================================
 	app.Post("/create-order-version-status-log", middlewares.JWTProtected(), EDIOrderHandler.CreateEDIOrderVersionStatusLogHandler)
 	app.Get("/get-status-log-by-version-id/:order_version_id", middlewares.JWTProtected(), EDIOrderHandler.GetOrderVersionStatusLogByOrderVersionIDHandler)
